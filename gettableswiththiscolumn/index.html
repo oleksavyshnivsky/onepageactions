@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Get all tables with this table name</title>
+
+	<link rel="stylesheet" type="text/css" href="https://cdn.usebootstrap.com/bootstrap/latest/css/bootstrap.min.css">
+</head>
+<body>
+	<div class="container text-center">
+		<h1>Get all tables with this table name</h1>
+		<code><pre id="query-template">
+SELECT `TABLE_NAME` 
+FROM `information_schema`.`COLUMNS`
+WHERE `TABLE_SCHEMA` = '***'
+AND `COLUMN_NAME` = '***'
+		</pre></code>
+
+		<form method="post" class="d-flex flex-wrap justify-content-center mb-5">
+			<div><div class="input-group">
+				<label class="input-group-text" for="editor-schema">Schema</label>
+				<input type="text" id="editor-schema" class="form-control" required>
+			</div></div>
+
+			<div><div class="input-group">
+				<label class="input-group-text" for="editor-column">Column</label>
+				<input type="text" id="editor-column" class="form-control" required>
+			</div></div>
+
+			<div>
+				<input type="submit" value="Submit" class="btn btn-primary">
+			</div>
+		</form>
+
+		<div class="alert mb-5" id="result"></div>
+		<div>
+			<button class="btn btn-secondary" data-clipboard-target="#result" id="btn-copy" style="display: none;">
+			    Copy result to clipboard
+			</button>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+
+	<script>
+		var schemata = []
+		var columns = []
+
+		function getItemsFromLocalStorage() {
+			schemata = JSON.parse(localStorage.getItem('schemata'))
+			columns = JSON.parse(localStorage.getItem('columns'))
+			if (typeof schemata !== 'object') schemata = []
+			if (typeof columns !== 'object') columns = []
+		}
+
+		function saveItemsToLocalStorage() {
+			localStorage.setItem('schemata', JSON.stringify(schemata))
+			localStorage.setItem('columns', JSON.stringify(columns))
+		}
+
+		function deleteItemsFromLocalStorage() {
+			localStorage.removeItem('schemata')
+			localStorage.removeItem('columns')
+		}
+
+		// ————————————————————————————————————————————————————————————————————————————————
+		// 
+		// ————————————————————————————————————————————————————————————————————————————————
+		getItemsFromLocalStorage()
+
+		new ClipboardJS('#btn-copy')
+
+		document.querySelector('form').onsubmit = e => {
+			e.preventDefault()
+			var schema = document.getElementById('editor-schema').value.trim()
+			var column = document.getElementById('editor-column').value.trim()
+
+			var query = document.getElementById('query-template').innerText.trim()
+
+			query = query.replace('***', schema)
+			query = query.replace('***', column)
+
+			if (schemata.indexOf(schema) === -1) schemata.push(schema)
+			if (columns.indexOf(column) === -1) columns.push(column)
+			saveItemsToLocalStorage()
+
+			document.getElementById('result').innerText = query
+			document.getElementById('btn-copy').style.display = query ? '' : 'none'
+		}
+
+
+
+	</script>
+</body>
+</html>
